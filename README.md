@@ -31,15 +31,52 @@ Notebook for PDE
 
 * Cloud Bigtable
   - key-value store to scale up to terabytes
-    (in comparison, relational database (e.b. Cloud SQL has limit of a few gigabytes)
-    tansactional operation NOT supported (you can use Cloud Datastore for that purpose)
-    - Apache HBase : a open source, distributed, scalable, big data table (wide column store)
+    (in comparison, relational database (e.b. Cloud SQL) has limit of a few gigabytes)
+  + notes
+    + feature
+      - good for flatten data (not hierarchical data)
+        - you can create column family by add prefix (e.g. "FIRST_CATEGORY:SECOND_CATEGORY:value") to column
+      - serach data only by key
+        - in stead of searching by a property of row, you should make key contain such informations
+        - you should design key not to make hot spot (a bucket with too much data) by combining key with random number
+      - to update a row, add a new row instead
+        (the old row remains, but it`s ok because rows are searched from latest)
+      - can use it via HBase API
+        (Apache HBase : a open source, distributed, scalable, big data table (wide column store))
+      + cons : what is given up to get more scalability than Cloud SQL
+        - transactional operation is NOT supported
+        - updating of just single field of object is NOT supported
+
+* BigQuery
+  - fully-managed data warehouse to run ad-hoc SQL queries on petabytes of data
+  + notes
+    + feature
+      - can use via standard SQL
+        query on BigQuery can be executed via API, web console or CLI
+        you don`t have to create a instance
+      - tables belongs to dataset, datasets belongs to a project
+    + 3 ways to load data
+      1. load data from disk : e.g. local machine, GCS, Cloud Datastore
+      2. stream data : from Cloud Dataflow or etc.
+      3. prepare data as a text file (e.g. .csv, .json or Google Sheet) on GCS and set up a federated data source (i.e. link to the file location)
+
+* Cloud Datalab
+  - Jupyter notebook with authenticated access to GCP products
+  + feature
+    - run on GCE, so easy to scale up
+  + how to use
+    1. run Datalab from CLI like CloudShell or local CLI
+    2. access to a specific port of the GCE machine where a Datalab runs
+    * in combination of Datalab and BigQuery, you can interectively run queires on massive dataset and get result in a pandas.DataFrame
 
 * Cloud Datastore
   - persistent hashmap database to scale up to terabytes
     (in comparison, relational database (e.b. Cloud SQL has limit of a few gigabytes)
-    when writing, you write entire object. when reading, you can search by both the key of object or a property of object.
-    transactional operation supported (e.g. update some column of some row in database)
+    (really?) when writing, you write entire object. when reading, you can search by both the key of object or a property of object.
+  + notes
+    + feature
+      - transactional operation supported (e.g. update some column of some row in database)
+  + how to use
     once you write constructor for Datastore, you can save|load object to|from Cloud Datastore directly inside script like java. (e.g. `some_object.save().entity(xjin)` to save)
 
 * Compute Engine
