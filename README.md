@@ -1,10 +1,11 @@
 Notebook for PDE
 
-# coursera specialization : Data Engineering on Google Cloud Platform Specialization
+# notes for coursera specialization : Data Engineering on Google Cloud Platform Specialization
 -----------------------------------------------------------------------------
   - URL : https://www.coursera.org/specializations/gcp-data-machine-learning
 
-## course 1 : Google Cloud Platform Big Data and Machine Learning Fundamentals
+## course 1 : Google Cloud Platform Big Data and Machine Learning Fundamentals (1 week)
+summary : introduction to GCP products for data engineering
 
 * 3 stages of the journey to the cloud
   1. simply change where to compute (do sampe calculation as on-premise)
@@ -19,7 +20,30 @@ Notebook for PDE
   - e.g. : compute engine -> container engine -> app engine
 
 
-### GCP products for data processing
+## course 2 : Leveraging Unstructured Data with Cloud Dataproc on Google Cloud Platform
+summary : guidance of Cloud Dataproc and Cloud Dataflow?
+
+* dealing with unstructured data is big issue
+  - as much as 90% of data is unstructured data (here, "unstructured" doesn`t mean "not stored in RDB", but means "collected not for the same purpose as one that we want to use it for"
+  - useful tools
+    - Cloud Dataproc with data pipeline and retful ML APIs
+
+* 4 stages of the cloud-shift of Hadoop
+  1. on premise original Hadoop
+  2. on premise vendor Hadoop
+  3. bdutil (free OSS toolkit) on GCP
+    - created, deployed and connected to GCP by Google
+  4. Cluod Dataproc
+    - in addition to above features, fully maintained by Google
+
+
+## course 3 : Serverless Data Analysis with Google BigQuery and Cloud Dataflow
+## course 4 : Serverless Machine Learning with Tensorflow on Google Cloud Platform
+## course 5 : Building Resilient Streaming Systems on Google Cloud Platform
+
+
+
+# notes for GCP products for data processing
 * comparison among storage solutions
   (order of stepping stones from on-premise to full-managed-cloud)
   1. Cloud Storage : storage for BLOB (Binary Large OBject)
@@ -77,6 +101,51 @@ Notebook for PDE
     2. access to a specific port of the GCE machine where a Datalab runs
     * in combination of Datalab and BigQuery, you can interectively run queires on massive dataset and get result in a pandas.DataFrame
 
+* Cloud DataProc
+  - managed Hadoop ecosystem (e.g. : Hadoop, Pig, Hive, Spark etc.)
+  + notes
+    - suitable for terabytes or petabytes of data
+      (for gigabytes or terabytes of data, running my own Hadoop cluster is more efficient than Cloud Dataproc)
+    + benefits of DataProc except basic cloud benefits (e.g. scalability)
+      - can store data on GCS, not on cluster
+        (if you store data on cluster, you have to keep them up 24-7.)
+        so, you need to make cluster up only while you do some colculation.
+      - DataProc cluster and preemptible VM machine are beautiful pair
+    + basics about Hadoop
+      - Hadoop : distributed processing system
+      - HDFS : distributed file systems
+  + how to use (way 1, simplest way from course 1)
+    0. in Cloud SLQ instance, allow access from the IP address of the machine which user owns (e.g. Cloud Shell)
+    1. create DataProc instance
+    2. authorize access from DataProc instance to Cloud SQL instance via `gcloud sql instances patch` command
+    3. create and run a DataProc job from GCP console
+      - you select job type (e.g. PySpark) and script (e.g. .py file on GCS) here
+  + how to use (way 2, detailed way from course 2)
+    1. create and connect Cloud Dataproc machienes from CLI (gcloud command from Cloud Shell or GCE instance) or REST API
+      - GCE instance is better than Cloud Shell because only the former has SLA.
+    2. create a GCS bucket for staging Dataproc
+      - you can use a GCS bucket to stage (1) Dataproc application or data files, (2) Dataproc initialization scripts and output
+      - by creating initializing-scripts for Dataproc clusters, you can automate cluster creation with Cron, Jenkins, etc.
+        (e.g. : add a node when PySpark job file is added.)
+    3. setting fire wall setting of Dataproc nodes from GCP console to connect to Dataproc cluster from your browser
+    4. now, you can use hadoop like ...
+      1. access to hadoop GUI such as below from your local browser
+        (how : access to <external_IP_of_hadoop_master_node>:<port> from the browser)
+        - applicatons interface : you can see all hadoop jobs running
+        - administration interface : you can see informations, files and logs of hadoop nodes
+  + configurations on creating a instance
+    - zone : if data is on GCS, zone should be matched
+    - master node : setting up clusters
+      1. single node : use only single Hadoop node for experimentation
+      2. standard : use 1 master node
+      3. high availability : use 3 master node (tolerant of instance-loss)
+    - machine type : select among machines with various number of CPUs and memories
+      - if you want additional memory, you can select "highmem" machine types
+    - preemptible worker nodes
+      - you can use it only for processing, not for hdfs (reason : it disappers anytime)
+      - maximum 50/50 ratio between persistent and preemptible machine is recommended to reduce the likelihood of job failure
+
+
 * Cloud Datastore
   - persistent hashmap database to scale up to *terabytes*
     (in comparison, relational database (e.g. Cloud SQL) has limit of a few gigabytes)
@@ -85,7 +154,7 @@ Notebook for PDE
     + feature
       - transactional operation supported (e.g. update some column of some row in database)
   + how to use
-    once you write constructor for Datastore, you can save|load object to|from Cloud Datastore directly inside script like java. (e.g. `some_object.save().entity(xjin)` to save)
+    once you write constructor for Datastore, you can (save|load) object (to|from) Cloud Datastore directly inside script like java. (e.g. `some_object.save().entity(xjin)` to save)
 
 * Compute Engine
   + notes
@@ -134,21 +203,6 @@ Notebook for PDE
     2. import .csv file to fullfill the empty table with data
     3. execute SQL query on Cloud SQL via mysql CLI using cloud-sql-proxy as support
 
-* Cloud DataProc
-  - managed Hadoop ecosystem (e.g. : Hadoop, Pig, Hive, Spark etc.)
-  + notes
-    + benefits of DataProc except basic cloud benefits (e.g. scalability)
-      - can store data on GCS, not on cluster
-        (if you store data on cluster, you have to keep them up 24-7.)
-        so, you need to make cluster up only while you do some colculation.
-      - DataProc cluster and preemptible VM machine are beautiful pair
-  + how to use
-    0. in Cloud SLQ instance, allow access from the IP address of the machine which user owns (e.g. Cloud Shell)
-    1. create DataProc instance
-    2. authorize access from DataProc instance to Cloud SQL instance via `gcloud sql instances patch` command
-    3. create DataProc job
-      - you select job type (e.g. PySpark) and script (e.g. .py file on GCS) here
-
 * Cloud ML Engine
   - no-ops machine learning application
 
@@ -166,20 +220,41 @@ Notebook for PDE
   + notes
     -
 
-## course 2 : Leveraging Unstructured Data with Cloud Dataproc on Google Cloud Platform
+* Spark
+  + Spark MLlib : distributed machine learning library
+  + 2 way of use
+    1. `pyspark` : start PySpark shell
+    2. `spark-submit <file_of_spark_job_written_in_Python>
+  + how to use
+    0. enter PySpark shell by executing `pyspark`
+    1. create a Spark RDD (Resilient Distributed Dataset : basic abstraction over data in Spark) from testfile
+    2. execute any processing on the Spark RDD object using Python and PySpark
+      - parallel processing by MapReduce is available
 
+* Pig
+  - Pig provides SQL primitives similar to Hive, but in a more flexible scripting language format. Pig can also deal with semi-structured data, such as data having partial schemas, or for which the schema is not yet known. For this reason it is sometimes used for Extract Transform Load (ETL). It generates Java MapReduce jobs. Pig is not designed to deal with unstructured data.
 
-## course 3 : Serverless Data Analysis with Google BigQuery and Cloud Dataflow
-
-
-## course 4 : Serverless Machine Learning with Tensorflow on Google Cloud Platform
-
-
-## course 5 : Building Resilient Streaming Systems on Google Cloud Platform
-
+* networkings
+  + VPC network (location : GCP Console > VPC network)
+    - you can set up firewall to permit|deny access from outside to GCP storages and instances
+      (location : VPC network > Firewall rules > Create Firewall Rule)
 
 # other notes
 -----------------------------------------------------------------------------
-## resources
+## useful resources to learn
   - github of GCP : https://github.com/GoogleCloudPlatform/training-data-analyst
     - training_data_analyst/CPB100/lab2b : get earchquake data from web and store it
+
+## technical terms
++ 2 way of dealing with large amout of data
+  1. scaling up, vertical scaling : old way. use a bigger single machine
+  2. scaling out, horizontal scaling : new way. use distributed parallel processing
+    - difficult, but efficient
++ 2 kind of programming
+  1. imperative programming : yow tell the system what to do and how to do (e.g. C++)
+  2. declarative programming : you tell the program what you want, and the program figures out how to implement it (e.g. Spark)
+
+## trivial notes
+- Githubでホストしている.mdファイルをconfluenceに貼り付けられないかと思ったが、有料のmarkdownレンダリングマクロ(の1機能として.mdファイルをurlで指定できる)が必要なようだ
+
+
