@@ -1,4 +1,4 @@
-Notebook for PDE
+Notes for PDE
 
 # notes for coursera specialization : Data Engineering on Google Cloud Platform Specialization
 -----------------------------------------------------------------------------
@@ -38,6 +38,8 @@ summary : guidance of Cloud Dataproc and Cloud Dataflow?
 
 
 ## course 3 : Serverless Data Analysis with Google BigQuery and Cloud Dataflow
+summary : guide to BigQuery and Cloud Dataflow
+
 ## course 4 : Serverless Machine Learning with Tensorflow on Google Cloud Platform
 ## course 5 : Building Resilient Streaming Systems on Google Cloud Platform
 
@@ -77,17 +79,86 @@ summary : guidance of Cloud Dataproc and Cloud Dataflow?
 * BigQuery
   - fully-managed data warehouse to run ad-hoc SQL queries on *petabytes* of data
   + notes
-    + feature
-      - can use via standard SQL
+    + pros and cons
+      + pros
+        - can deal with the biggest structured data among GCP products
+        - can deal with data of complex structure (e.g. json)
+        - cost for data storage is inexpensive : almost same as Cloud Storage
+          (the discount rate of long use is almost same, too.)
+      + cons
+    + basic features
+      - can use via standard SQL (SQL 2011)
         query on BigQuery can be executed via API, web console or CLI
         you don`t have to create a instance
       - tables belongs to dataset, datasets belongs to a project
+      - good for near-real time analysis (delay : seconds)
+        - for true real time analysis (delay : microseconds), Cloud SQL or something like Spanner is good.
+      - accepted text file : CSV, JSON, AVRO, or Cloud Datastore backups
+    + fee
+      1. for storae
+      2. for query (two plan : "pay for use" (recommended) and "flat plan")
+    + ways to upload data
+      1. via BigQuery web UI (which is available on Cloud Console)
+        1) create a dataset and a new table in it via BigQuery UI.
+           When creating, select "Created table from : Upload" and specify the file to upload.
+      2. via `bq` (BigQuery CLI)
+        1) run `bq` command with proper options on Cloud Shell
+      #1. load data from disk : e.g. local machine, GCS, Cloud Datastore
+      #2. stream data : from Cloud Dataflow or etc.
+      #3. prepare data as a text file (e.g. .csv, .json or Google Sheet) on GCS and set up a federated data source (i.e. link to the file location)
+    + ways to export data
+      1. receive to a bucket of Cloud Storage
+    + grammer of SQL on BigQuery
+      + ARRAY, STRUCT : can be used for grouping data
+      + normalize v.s. denormalize
+        normalizing data make data more complact, but denormalizing data make query faster.
+        you can use "nested repeated fields" as a middle option of them : make query faster while reserving relationalism of the data
+        (e.g. you can nest fields `foo.bar` and `foo.baz` under `foo`. 
+              nested field `foo` can be unnested by `UNNEST(foo)` (similar to EXPLODE()) in FROM clause or `foo[OFFSET(0)].bar` in SELECT clause)
+      + UDF
+        - JavaScript and SQL UDFs are supported with some limitations.
+          - amount of data to process
+          - number of UDFs defined and used
+        - for faster query, use `APPROX_***` UDFs
+          (e.g. APPROX_COUNT() is faster than COUNT(), but not precise)
+      + partition
+        partitions is efficient especially when dealing with time-based data
+        - by declare `time_partitioning_type` or `time_partitioning_expiration` on creating table,
+          BigQuery automatically store data in collect partition
+    + function of BigQuery
+      + performance monitoring
+        1. per-query performance : can be checked by explain plans
+        2. project-level monitoring : can be checked by Google Stackdriver
+
+* Cloud Dataflow
+  - data pipeline : Apache Beam on GCP
+  + notes
+    + pros and cons
       + pros
-        - can deal with the biggest structured data among GCP products
-    + 3 ways to load data
-      1. load data from disk : e.g. local machine, GCS, Cloud Datastore
-      2. stream data : from Cloud Dataflow or etc.
-      3. prepare data as a text file (e.g. .csv, .json or Google Sheet) on GCS and set up a federated data source (i.e. link to the file location)
+      + cons
+  + basic features
+    - each step (called 'transform') of pipeline is automatically-scalable
+    - adaptive to both batch process and stream process
+    - pipeline can be written in both Java and Python
+    - can ingest data from/output data to GCS, BigQuery, Pub/Sub and a file
+  + additional features
+    + MapReduce on Cloud Dataflow
+    + side input
+  + usage
+    1. write code to create a graph of pipeline
+      e.g.
+        p = beam.Pipeline()
+        (p | <some_process_to_apply> | ... )
+    2. write code to run the graph
+      e.g.
+        p.run()
+    3. run the code
+      (a) run locally
+      (b) run on GCP
+    + terms
+      - PCollection : parallel collection(取得) of data
+                      represent data in pipeline
+                      (?) not in-memory collection, but can be outbound
 
 * Cloud Datalab
   - Jupyter notebook with authenticated access to GCP products
@@ -239,6 +310,7 @@ summary : guidance of Cloud Dataproc and Cloud Dataflow?
     - you can set up firewall to permit|deny access from outside to GCP storages and instances
       (location : VPC network > Firewall rules > Create Firewall Rule)
 
+
 # other notes
 -----------------------------------------------------------------------------
 ## useful resources to learn
@@ -256,5 +328,10 @@ summary : guidance of Cloud Dataproc and Cloud Dataflow?
 
 ## trivial notes
 - Githubでホストしている.mdファイルをconfluenceに貼り付けられないかと思ったが、有料のmarkdownレンダリングマクロ(の1機能として.mdファイルをurlで指定できる)が必要なようだ
+
+## history
+- 20190511 WIP on course 3
+- 20190330 finished course 2
+- 20190214 finished sourse 1
 
 
